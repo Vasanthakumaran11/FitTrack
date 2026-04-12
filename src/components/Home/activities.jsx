@@ -1,7 +1,9 @@
 import  { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 function Activities(data){
     const [count, setCount] = useState(0);
+    const navigate = useNavigate();
     function DataStored(c){
         if(c === 0){
             toast.success("Data Stored Successfully");
@@ -17,7 +19,7 @@ function Activities(data){
             <img src={data.img} alt={data.work} className="w-full h-48 object-cover rounded mb-2"/>
             <h1 className="font-bold mt-2 text-lg text-center">{data.work}</h1>
             <p className="text-sm text-center">{data.desc}</p>
-            <button onClick={() => {DataStored(count)}} className="bg-blue-500 text-white px-4 py-2 rounded mt-4 block mx-auto hover:bg-blue-600 transition-colors">Add Data</button>
+            <button onClick={() => navigate('/' + data.work)} className="bg-blue-500 text-white px-4 py-2 rounded mt-4 block mx-auto hover:bg-blue-600 transition-colors">Add Data</button>
         </div>
     )
 }

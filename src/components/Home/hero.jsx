@@ -43,25 +43,12 @@ function HeroPage(){
             desc: "Sleeping for 8 hours"
         },
         {
-            img: "meditation.jpg",
-            work: "Meditation",
-            desc: "Meditating for 20 minutes"
+            img:"snack.jpg",
+            work:"Snack",
+            desc:"Eating a Healthy Snack"
+
         },
-        {
-            img: "cycling.jpg",
-            work: "Cycling",
-            desc: "Cycling for 45 minutes"
-        },
-        {
-            img: "swimming.jpg",  
-            work: "Swimming",
-            desc: "Swimming for 30 minutes"
-        },
-        {
-            img: "reading.jpg",
-            work: "Reading",
-            desc: "Reading for 1 hour"
-        }
+        
     ]
     const Activities1 = a.map((item,index) => {
         return <Activities key={index} img={item.img} work={item.work} desc={item.desc} />;
