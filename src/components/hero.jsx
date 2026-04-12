@@ -63,8 +63,8 @@ function HeroPage(){
             desc: "Reading for 1 hour"
         }
     ]
-    const Activities1 = a.map((item) => {
-        return <Activities img={item.img} work={item.work} desc={item.desc} />;
+    const Activities1 = a.map((item,index) => {
+        return <Activities key={index} img={item.img} work={item.work} desc={item.desc} />;
     })
 
     return(
