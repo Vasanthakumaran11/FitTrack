@@ -12,8 +12,8 @@ import { useSleep } from './useSleep';
 import { useStress } from './useStress';
 
 export const useScore = (data) => {
-  const { caloriesBurned, caloriesIntake, calorieBalance } = useCalories(data);
-  const { sleepStatus, sleepScore } = useSleep(data);
+  const { calorieBalance } = useCalories(data);
+  const { sleepScore } = useSleep(data);
   const { stressScore } = useStress(data);
 
   const getYogaScore = () => {

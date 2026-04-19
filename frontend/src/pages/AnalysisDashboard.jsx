@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useCalories } from '../hooks/useCalories';
 import { useSleep } from '../hooks/useSleep';
-import { useStress } from '../hooks/useStress';
+
 import { useScore } from '../hooks/useScore';
 import { DashboardCard, ScoreCard } from '../components/Dashboard/DashboardCard';
 import { formatDataForAnalysis, clearHealthData } from '../utils/storageUtils';
@@ -14,8 +14,10 @@ export const AnalysisDashboard = () => {
 
   const calories = useCalories(healthData);
   const sleep = useSleep(healthData);
-  const stress = useStress(healthData);
   const score = useScore(healthData);
+
+  const physicalHealthScore = Math.round((score.breakdownScores.calorieBalance + score.breakdownScores.yoga) / 2);
+  const mentalHealthScore = Math.round((score.breakdownScores.sleep + score.breakdownScores.stress) / 2);
 
   const healthyBenchmarks = {
     caloriesIntake: 2200,
@@ -72,34 +74,57 @@ export const AnalysisDashboard = () => {
   const generateRecommendations = () => {
     const recs = { do: [], avoid: [], improvements: [] };
     
-    if (calories.caloriesIntake > healthyBenchmarks.caloriesIntake + 500) {
-      recs.avoid.push("Reduce calorie intake, currently above baseline.");
-      recs.do.push("Focus on portion control and nutrient-dense foods.");
-    } else if (calories.caloriesIntake < healthyBenchmarks.caloriesIntake - 500) {
-      recs.do.push("Increase calorie intake slightly for better energy.");
+    // Calories
+    if (calories.caloriesIntake > healthyBenchmarks.caloriesIntake) {
+      recs.avoid.push(`Calorie intake (${calories.caloriesIntake} cal) exceeds healthy daily average (${healthyBenchmarks.caloriesIntake} cal). Avoid high-calorie foods.`);
+      recs.improvements.push("Focus on portion control and nutrient-dense, low-calorie foods.");
+    } else if (calories.caloriesIntake < healthyBenchmarks.caloriesIntake - 500 && calories.caloriesIntake > 0) {
+      recs.do.push("Increase calorie intake slightly for better energy and to meet baseline needs.");
     }
 
+    // Protein
+    if (nutrition.protein > healthyBenchmarks.protein) {
+      recs.avoid.push(`Protein intake (${nutrition.protein}g) exceeds the optimal limit (${healthyBenchmarks.protein}g). Avoid over-consuming heavy protein supplements.`);
+    } else if (nutrition.protein < 50 && nutrition.protein > 0) {
+      recs.do.push("Increase protein intake to support muscle recovery (aim for 50-100g).");
+    }
+
+    // Carbs
+    if (nutrition.carbs > healthyBenchmarks.carbs) {
+      recs.avoid.push(`Carb intake (${nutrition.carbs}g) exceeds the recommended limit (${healthyBenchmarks.carbs}g). Avoid simple carbs and excess grains.`);
+      recs.improvements.push("Replace simple carbs with complex, high-fiber alternatives like vegetables.");
+    }
+
+    // Fett
+    if (nutrition.fat > healthyBenchmarks.fat) {
+      recs.avoid.push(`Fat intake (${nutrition.fat}g) is above the healthy limit (${healthyBenchmarks.fat}g). Avoid fried foods and excess saturated fats.`);
+      recs.improvements.push("Opt for healthy fats (nuts, avocados, olive oil) in strict moderation.");
+    }
+
+    // Exercise
     if (exerciseAnalysis.totalMinutes < 30) {
       recs.do.push("Aim for at least 30 minutes of physical activity.");
-      recs.improvements.push("Incorporate a brisk walk into your routine.");
+      recs.improvements.push("Incorporate a brisk walk into your daily routine.");
     } else if (exerciseAnalysis.totalMinutes > 120) {
-      recs.avoid.push("Avoid over-exercising; allow for adequate recovery.");
+      recs.avoid.push("Avoid over-exercising; allow for adequate physical recovery and rest days.");
     }
 
-    if (sleep.sleepHours < 7) {
+    // Sleep
+    if (sleep.sleepHours > 0 && sleep.sleepHours < 7) {
       recs.do.push("Prioritize 7-9 hours of consistent sleep.");
       recs.improvements.push("Establish a pre-sleep relaxation routine.");
     }
 
-    if (nutrition.protein < 100) recs.do.push("Increase protein intake.");
-    if (nutrition.water < 2.5) recs.do.push("Drink more water (aim for 3L).");
-    if (nutrition.fat > 100) recs.avoid.push("Reduce saturated fat intake.");
+    // Water
+    if (nutrition.water > 0 && nutrition.water < 2.5) {
+      recs.do.push("Drink more water (aim for at least 3L).");
+    }
 
     if (!healthData.jogging?.duration && !healthData.gym?.duration) {
-      recs.do.push("Include cardio exercises like jogging.");
+      recs.do.push("Include cardio exercises like jogging for cardiovascular health.");
     }
     if (!healthData.yoga?.duration) {
-      recs.do.push("Consider yoga or stretching for flexibility.");
+      recs.do.push("Consider yoga or stretching to promote flexibility and mental calmness.");
     }
 
     return recs;
@@ -154,7 +179,7 @@ export const AnalysisDashboard = () => {
         </p>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 mt-10 space-y-10">
+      <div className="w-[95%] lg:w-[90%] xl:max-w-[1400px] mx-auto px-4 sm:px-6 mt-10 space-y-10">
         <div className="mb-10">
           <ScoreCard
             score={score.overallScore}
@@ -163,37 +188,7 @@ export const AnalysisDashboard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <BarChart
-            title="Calorie Balance"
-            data={[
-              { label: 'Intake', value: `${calories.caloriesIntake}`, percentage: (calories.caloriesIntake / (healthyBenchmarks.caloriesIntake * 1.5)) * 100, color: 'bg-blue-600' },
-              { label: 'Target', value: `${healthyBenchmarks.caloriesIntake}`, percentage: (healthyBenchmarks.caloriesIntake / (healthyBenchmarks.caloriesIntake * 1.5)) * 100, color: 'bg-gray-400' }
-            ]}
-          />
-          <BarChart
-            title="Exercise Duration"
-            data={[
-              { label: 'Current', value: `${exerciseAnalysis.totalMinutes}m`, percentage: (exerciseAnalysis.totalMinutes / 120) * 100, color: 'bg-blue-600' },
-              { label: 'Target', value: '60m', percentage: 50, color: 'bg-gray-400' }
-            ]}
-          />
-          <BarChart
-            title="Sleep Schedule"
-            data={[
-              { label: 'Logged', value: `${sleep.sleepHours}h`, percentage: (sleep.sleepHours / 12) * 100, color: 'bg-indigo-600' },
-              { label: 'Target', value: '8h', percentage: (8 / 12) * 100, color: 'bg-gray-400' }
-            ]}
-          />
-          <BarChart
-            title="Daily Nutrition"
-            data={[
-              { label: 'Protein', value: `${nutrition.protein}g`, percentage: (nutrition.protein / 200) * 100, color: 'bg-green-600' },
-              { label: 'Carbs', value: `${nutrition.carbs}g`, percentage: (nutrition.carbs / 300) * 100, color: 'bg-yellow-500' },
-              { label: 'Fat', value: `${nutrition.fat}g`, percentage: (nutrition.fat / 100) * 100, color: 'bg-red-500' }
-            ]}
-          />
-        </div>
+       
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <DashboardCard title="Calories Burned" value={exerciseAnalysis.totalCalories} unit="cal" />
@@ -223,75 +218,66 @@ export const AnalysisDashboard = () => {
           </div>
         </div>
 
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Score Card</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+            <div className="text-center py-4 md:py-0 flex flex-col items-center justify-center">
+              <div className="text-4xl font-bold text-indigo-600">{physicalHealthScore}</div>
+              <div className="text-lg font-medium text-gray-700 mt-2">Physical Health</div>
+              <div className="text-lg font-medium mt-4 px-4 text-indigo-700 bg-indigo-50 p-4 rounded-lg w-full shadow-sm">
+                💡 {physicalHealthScore < 60 ? "Improvement: Start with light daily exercises and focus on maintaining a balanced, nutrient-rich diet to build stamina." :
+                 physicalHealthScore < 80 ? "Improvement: Add 15-20 more minutes of cardio or try new yoga asanas to push your physical health to the next level." :
+                 "Improvement: Outstanding physical health! Maintain your current routine and enjoy the vitality it brings."}
+              </div>
+            </div>
+            <div className="text-center py-4 md:py-0 flex flex-col items-center justify-center">
+              <div className="text-4xl font-bold text-teal-600">{mentalHealthScore}</div>
+              <div className="text-lg font-medium text-gray-700 mt-2">Mental Health</div>
+              <div className="text-lg font-medium mt-4 px-4 text-teal-700 bg-teal-50 p-4 rounded-lg w-full shadow-sm">
+                💡 {mentalHealthScore < 60 ? "Improvement: Prioritize 7-8 hours of sleep, reduce screen time before bed, and consider daily 10-minute meditation sessions." :
+                 mentalHealthScore < 80 ? "Improvement: Your mental balance is good! Protect your rest days and ensure work-life boundaries remain strong." :
+                 "Improvement: Excellent mental resilience! Your current sleep and relaxation habits are highly effective."}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 shadow-sm">
             <h3 className="text-lg font-bold text-green-800 mb-4">To Do</h3>
             <ul className="space-y-3">
               {recommendations.do.map((rec, i) => (
-                <li key={i} className="text-sm text-green-900 flex items-start">
-                  <span className="text-green-600 mr-2">•</span> {rec}
+                <li key={i} className="text-base text-green-900 flex items-start">
+                  <span className="text-green-600 mr-2 text-xl">•</span> {rec}
                 </li>
               ))}
-              {recommendations.do.length === 0 && <li className="text-sm text-green-700">No specific actions needed.</li>}
+              {recommendations.do.length === 0 && <li className="text-base text-green-700">No specific actions needed.</li>}
             </ul>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 shadow-sm">
             <h3 className="text-lg font-bold text-red-800 mb-4">To Avoid</h3>
             <ul className="space-y-3">
               {recommendations.avoid.map((rec, i) => (
-                <li key={i} className="text-sm text-red-900 flex items-start">
-                  <span className="text-red-500 mr-2">•</span> {rec}
+                <li key={i} className="text-base text-red-900 flex items-start">
+                  <span className="text-red-500 mr-2 text-xl">•</span> {rec}
                 </li>
               ))}
-              {recommendations.avoid.length === 0 && <li className="text-sm text-red-700">No major concerns found.</li>}
+              {recommendations.avoid.length === 0 && <li className="text-base text-red-700">No major concerns found.</li>}
             </ul>
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-blue-800 mb-4">Improvements</h3>
-            <ul className="space-y-3">
+            <h3 className="text-xl font-bold text-blue-800 mb-4">Improvements</h3>
+            <ul className="space-y-4">
               {recommendations.improvements.map((rec, i) => (
-                <li key={i} className="text-sm text-blue-900 flex items-start">
-                  <span className="text-blue-500 mr-2">•</span> {rec}
+                <li key={i} className="text-lg font-medium text-blue-900 flex items-start bg-blue-100/50 p-3 rounded-lg">
+                  <span className="text-blue-500 mr-2 text-2xl">•</span> {rec}
                 </li>
               ))}
-              {recommendations.improvements.length === 0 && <li className="text-sm text-blue-700">Routine looks balanced.</li>}
+              {recommendations.improvements.length === 0 && <li className="text-lg font-medium text-blue-700">Routine looks balanced.</li>}
             </ul>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Score Breakdown</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center p-4">
-              <div className="text-3xl font-bold text-gray-800">{Math.round(score.breakdownScores.calorieBalance)}</div>
-              <div className="text-sm font-medium text-gray-600 mt-1">Calories (30%)</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="bg-blue-600 h-2 rounded-full" style={{width: `${score.breakdownScores.calorieBalance}%`}}></div>
-              </div>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-3xl font-bold text-gray-800">{Math.round(score.breakdownScores.sleep)}</div>
-              <div className="text-sm font-medium text-gray-600 mt-1">Sleep (30%)</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="bg-indigo-600 h-2 rounded-full" style={{width: `${score.breakdownScores.sleep}%`}}></div>
-              </div>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-3xl font-bold text-gray-800">{Math.round(score.breakdownScores.yoga)}</div>
-              <div className="text-sm font-medium text-gray-600 mt-1">Mind (20%)</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="bg-purple-600 h-2 rounded-full" style={{width: `${score.breakdownScores.yoga}%`}}></div>
-              </div>
-            </div>
-            <div className="text-center p-4">
-              <div className="text-3xl font-bold text-gray-800">{Math.round(score.breakdownScores.stress)}</div>
-              <div className="text-sm font-medium text-gray-600 mt-1">Stress (20%)</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="bg-green-600 h-2 rounded-full" style={{width: `${score.breakdownScores.stress}%`}}></div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
           <button

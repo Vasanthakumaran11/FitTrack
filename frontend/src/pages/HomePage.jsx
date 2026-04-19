@@ -1,29 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Activities from '../components/Home/activities';
 import { getHealthData } from '../utils/storageUtils';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const [hasData, setHasData] = useState(false);
-  const [stats, setStats] = useState({
-    totalCalories: 0,
-    totalExercises: 0,
-    totalSleep: 0,
-    lastUpdated: null
-  });
-
-  useEffect(() => {
+  
+  const [hasData] = useState(() => {
     const healthData = getHealthData();
-    const hasAnyData = healthData?.exercise || healthData?.food;
-    setHasData(!!hasAnyData);
+    return !!(healthData?.exercise || healthData?.food);
+  });
+  
+  const [stats] = useState(() => {
+    const healthData = getHealthData();
+    let totalCalories = 0;
+    let totalExercises = 0;
+    let totalSleep = 0;
+    let lastUpdated = null;
 
     if (healthData) {
-      let totalCalories = 0;
-      let totalExercises = 0;
-      let totalSleep = 0;
-      let lastUpdated = null;
-
       if (healthData.food) {
         Object.values(healthData.food).forEach(dayData => {
           if (dayData.totals) totalCalories += dayData.totals.calories || 0;
@@ -49,15 +44,15 @@ export const HomePage = () => {
           .filter(item => item.timestamp)
           .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]?.timestamp;
       }
-
-      setStats({
-        totalCalories: Math.max(0, totalCalories),
-        totalExercises,
-        totalSleep: Math.round(totalSleep * 10) / 10,
-        lastUpdated
-      });
     }
-  }, []);
+
+    return {
+      totalCalories: Math.max(0, totalCalories),
+      totalExercises,
+      totalSleep: Math.round(totalSleep * 10) / 10,
+      lastUpdated
+    };
+  });
 
   const activities = [
     { img: "sleep.avif", work: "Sleep", desc: "Track your sleep hours" },
@@ -90,7 +85,7 @@ export const HomePage = () => {
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="w-[95%] lg:w-[90%] xl:max-w-[1400px] mx-auto px-4 sm:px-6 mb-8">
         {/* Quick Stats Section */}
         {hasData && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 -mt-8 relative z-10 mb-12">

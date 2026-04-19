@@ -17,18 +17,18 @@ export const getHealthData = () => {
  */
 export const saveModuleData = (moduleName, moduleData) => {
   const allData = getHealthData();
+  const lowerName = moduleName.toLowerCase();
 
   // Determine category
-  const isExercise = ["Jogging", "Gym", "Yoga", "Sleep"].includes(moduleName);
-  const isFood = ["BreakFast", "Lunch", "Dinner", "Snack"].includes(moduleName);
+  const isExercise = ["jogging", "gym", "yoga", "sleep"].includes(lowerName);
+  const isFood = ["breakfast", "lunch", "dinner", "snack"].includes(lowerName);
 
   if (isExercise) {
     if (!allData.exercise) allData.exercise = {};
-    allData.exercise[moduleName.toLowerCase()] = moduleData;
+    allData.exercise[lowerName] = moduleData;
   } else if (isFood) {
     if (!allData.food) allData.food = {};
-    const foodKey = moduleName === "BreakFast" ? "breakfast" : moduleName.toLowerCase();
-    allData.food[foodKey] = moduleData;
+    allData.food[lowerName] = moduleData;
   }
 
   localStorage.setItem(HEALTH_DATA_KEY, JSON.stringify(allData));
@@ -40,14 +40,15 @@ export const saveModuleData = (moduleName, moduleData) => {
  */
 export const getModuleData = (moduleName) => {
   const allData = getHealthData();
-  const isExercise = ["Jogging", "Gym", "Yoga", "Sleep"].includes(moduleName);
-  const isFood = ["BreakFast", "Lunch", "Dinner", "Snack"].includes(moduleName);
+  const lowerName = moduleName.toLowerCase();
+  
+  const isExercise = ["jogging", "gym", "yoga", "sleep"].includes(lowerName);
+  const isFood = ["breakfast", "lunch", "dinner", "snack"].includes(lowerName);
 
   if (isExercise) {
-    return allData.exercise?.[moduleName.toLowerCase()] || null;
+    return allData.exercise?.[lowerName] || null;
   } else if (isFood) {
-    const foodKey = moduleName === "BreakFast" ? "breakfast" : moduleName.toLowerCase();
-    return allData.food?.[foodKey] || null;
+    return allData.food?.[lowerName] || null;
   }
 
   return null;
@@ -65,14 +66,15 @@ export const clearHealthData = () => {
  */
 export const clearModuleData = (moduleName) => {
   const allData = getHealthData();
-  const isExercise = ["Jogging", "Gym", "Yoga", "Sleep"].includes(moduleName);
-  const isFood = ["BreakFast", "Lunch", "Dinner", "Snack"].includes(moduleName);
+  const lowerName = moduleName.toLowerCase();
+  
+  const isExercise = ["jogging", "gym", "yoga", "sleep"].includes(lowerName);
+  const isFood = ["breakfast", "lunch", "dinner", "snack"].includes(lowerName);
 
   if (isExercise && allData.exercise) {
-    delete allData.exercise[moduleName.toLowerCase()];
+    delete allData.exercise[lowerName];
   } else if (isFood && allData.food) {
-    const foodKey = moduleName === "BreakFast" ? "breakfast" : moduleName.toLowerCase();
-    delete allData.food[foodKey];
+    delete allData.food[lowerName];
   }
 
   localStorage.setItem(HEALTH_DATA_KEY, JSON.stringify(allData));

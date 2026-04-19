@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { saveModuleData, getModuleData } from '../utils/storageUtils';
@@ -50,19 +51,11 @@ const FOOD_DATA = {
 const FoodFormTemplate = ({ name, foodType }) => {
   return function FoodForm() {
     const navigate = useNavigate();
-    const [selectedFoods, setSelectedFoods] = useState([]);
-    const [customFood, setCustomFood] = useState({ name: '', calories: '', quantity: '' });
-    const [waterIntake, setWaterIntake] = useState('');
+    const savedData = getModuleData(name) || {};
+    const [selectedFoods, setSelectedFoods] = useState(savedData.selectedFoods || []);
+    const [customFood, setCustomFood] = useState(savedData.customFood || { name: '', quantity: '' });
+    const [waterIntake, setWaterIntake] = useState(savedData.waterIntake || '');
     const [showCustom, setShowCustom] = useState(false);
-
-    useEffect(() => {
-      const saved = getModuleData(name);
-      if (saved) {
-        setSelectedFoods(saved.selectedFoods || []);
-        setCustomFood(saved.customFood || { name: '', calories: '', quantity: '' });
-        setWaterIntake(saved.waterIntake || '');
-      }
-    }, [name]);
 
     const foodOptions = FOOD_DATA[foodType] || {};
 
@@ -95,6 +88,39 @@ const FoodFormTemplate = ({ name, foodType }) => {
       setSelectedFoods(prev => prev.filter(f => f.name !== foodName));
     };
 
+    const analyzeFood = (name) => {
+      const lowerName = name.toLowerCase();
+      let category = 'healthy';
+      let calPerUnit = 150;
+      let p = 5; let c = 20; let f = 5;
+
+      const junkKeywords = ['burger', 'pizza', 'fries', 'chips', 'cake', 'sweet', 'chocolate', 'coke', 'soda', 'ice cream', 'candy'];
+      const proteinKeywords = ['chicken', 'egg', 'fish', 'meat', 'beef', 'paneer', 'tofu', 'dal', 'lentil'];
+      const carbKeywords = ['rice', 'bread', 'roti', 'pasta', 'noodles', 'potato'];
+      
+      if (junkKeywords.some(k => lowerName.includes(k))) {
+        category = 'junk';
+        calPerUnit = 350; p = 8; c = 40; f = 20;
+      } else if (proteinKeywords.some(k => lowerName.includes(k))) {
+        category = 'protein';
+        calPerUnit = 250; p = 25; c = 10; f = 12;
+      } else if (carbKeywords.some(k => lowerName.includes(k))) {
+        category = 'carbs';
+        calPerUnit = 200; p = 5; c = 45; f = 2;
+      } else {
+        category = 'healthy';
+        calPerUnit = 120; p = 4; c = 25; f = 3;
+      }
+
+      return {
+        calories: calPerUnit,
+        protein: p,
+        carbs: c,
+        fat: f,
+        category
+      };
+    };
+
     const updateQuantity = (foodName, newQuantity) => {
       setSelectedFoods(prev =>
         prev.map(f => f.name === foodName ? { ...f, quantity: Math.max(1, newQuantity) } : f)
@@ -102,26 +128,25 @@ const FoodFormTemplate = ({ name, foodType }) => {
     };
 
     const addCustomFood = () => {
-      if (!customFood.name || !customFood.calories) {
-        toast.error('Please fill in food name and calories');
+      if (!customFood.name) {
+        toast.error('Please fill in the food name');
         return;
       }
 
+      const qty = parseInt(customFood.quantity) || 1;
+      const analysis = analyzeFood(customFood.name, qty);
+
       const newFood = {
         name: customFood.name,
-        calories: parseInt(customFood.calories),
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        category: 'custom',
-        quantity: parseInt(customFood.quantity) || 1,
+        ...analysis,
+        quantity: qty,
         timestamp: new Date().toISOString()
       };
 
       setSelectedFoods(prev => [...prev, newFood]);
-      setCustomFood({ name: '', calories: '', quantity: '' });
+      setCustomFood({ name: '', quantity: '' });
       setShowCustom(false);
-      toast.success('Custom food added!');
+      toast.success('Analyzed and added custom food!');
     };
 
     const calculateTotals = () => {
@@ -185,25 +210,18 @@ const FoodFormTemplate = ({ name, foodType }) => {
           {showCustom && (
             <div className="mb-8 p-5 bg-blue-50 rounded-md border border-blue-100">
               <h4 className="font-medium text-blue-900 mb-4">Add Custom Item</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <input
                   type="text"
-                  placeholder="Food name"
-                  value={customFood.name}
+                  placeholder="Food name (e.g., Apple, Pizza, Chicken)"
+                  value={customFood.name || ''}
                   onChange={(e) => setCustomFood(prev => ({ ...prev, name: e.target.value }))}
                   className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
                 <input
                   type="number"
-                  placeholder="Calories"
-                  value={customFood.calories}
-                  onChange={(e) => setCustomFood(prev => ({ ...prev, calories: e.target.value }))}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                />
-                <input
-                  type="number"
-                  placeholder="Quantity"
-                  value={customFood.quantity}
+                  placeholder="Quantity (e.g., 1)"
+                  value={customFood.quantity || ''}
                   onChange={(e) => setCustomFood(prev => ({ ...prev, quantity: e.target.value }))}
                   className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />

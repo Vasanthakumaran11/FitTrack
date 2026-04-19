@@ -22,10 +22,10 @@ export const useCalories = (data) => {
   const calculateIntake = () => {
     if (!data || !data.food) return 0;
 
-    const breakfast = data.food?.breakfast?.calories || 0;
-    const lunch = data.food?.lunch?.calories || 0;
-    const dinner = data.food?.dinner?.calories || 0;
-    const snacks = data.food?.snack?.calories || 0;
+    const breakfast = data.food?.breakfast?.totals?.calories || 0;
+    const lunch = data.food?.lunch?.totals?.calories || 0;
+    const dinner = data.food?.dinner?.totals?.calories || 0;
+    const snacks = data.food?.snack?.totals?.calories || 0;
 
     return breakfast + lunch + dinner + snacks;
   };

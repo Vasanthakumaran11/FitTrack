@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { getModuleData } from '../../utils/storageUtils';
 
 function Activities({ work, desc, img }) {
     const navigate = useNavigate();
-    const [isDataStored, setIsDataStored] = useState(!!getModuleData(work));
+    const [isDataStored] = useState(!!getModuleData(work));
 
     const handleAddData = () => {
         navigate('/' + work);
@@ -14,7 +13,7 @@ function Activities({ work, desc, img }) {
     return(
         <div 
             onClick={handleAddData}
-            className="group flex flex-col bg-white border border-gray-200 rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 cursor-pointer"
+            className="group flex flex-col  bg-white border border-gray-200 rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 cursor-pointer"
         >
             <div className="relative overflow-hidden rounded-lg bg-gray-50 aspect-[4/3] mb-4">
                 <img

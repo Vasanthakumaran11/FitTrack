@@ -1,22 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { saveModuleData, getModuleData } from '../utils/storageUtils';
 
 export const JoggingForm = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    startTime: '',
-    endTime: '',
-    date: new Date().toISOString().split('T')[0]
-  });
-
-  useEffect(() => {
+  const [formData, setFormData] = useState(() => {
     const saved = getModuleData('Jogging');
-    if (saved) {
-      setFormData(saved);
-    }
-  }, []);
+    return saved || {
+      startTime: '',
+      endTime: '',
+      distanceKm: '',
+      date: new Date().toISOString().split('T')[0]
+    };
+  });
 
   const calculateDuration = () => {
     if (!formData.startTime || !formData.endTime) return 0;
@@ -44,8 +41,8 @@ export const JoggingForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.startTime || !formData.endTime) {
-      toast.error('Please fill in all fields');
+    if (!formData.startTime || !formData.endTime || !formData.distanceKm) {
+      toast.error('Please fill in all fields including distance');
       return;
     }
 
@@ -55,10 +52,16 @@ export const JoggingForm = () => {
       return;
     }
 
+    const distance = parseFloat(formData.distanceKm);
+    
+    // Roughly 65 calories per km for jogging, fallback to duration based if something goes wrong
+    const caloriesBurned = distance ? Math.round(distance * 65) : (duration * 8);
+
     const dataToSave = {
       ...formData,
+      distanceKm: distance,
       duration,
-      caloriesBurned: duration * 8
+      caloriesBurned
     };
 
     saveModuleData('Jogging', dataToSave);
@@ -112,14 +115,30 @@ export const JoggingForm = () => {
             />
           </div>
 
-          {formData.startTime && formData.endTime && (
-            <div className="bg-blue-50 p-4 rounded-md border border-blue-100 text-center">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Distance (Km)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              name="distanceKm"
+              value={formData.distanceKm}
+              onChange={handleChange}
+              placeholder="e.g., 5"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+            />
+          </div>
+
+          {formData.startTime && formData.endTime && formData.distanceKm && (
+            <div className="bg-blue-50 p-4 rounded-md border border-blue-100 text-center flex flex-col gap-1">
               <p className="text-blue-900 font-medium text-lg">
                 Duration: <span className="font-bold">{calculateDuration()}</span> min
               </p>
-              <p className="text-sm text-blue-700 mt-1">
-                Calories: {calculateDuration() * 8} cal
-              </p>
+              <div className="flex justify-center gap-6 mt-1 text-sm text-blue-700">
+                <p>Distance: <span className="font-bold">{formData.distanceKm}</span> km</p>
+                <p>Calories: <span className="font-bold">{Math.round(parseFloat(formData.distanceKm || 0) * 65)}</span> cal</p>
+              </div>
             </div>
           )}
 
@@ -146,18 +165,10 @@ export const JoggingForm = () => {
 
 export const GymForm = () => {
   const navigate = useNavigate();
-  const [selectedSchedule, setSelectedSchedule] = useState('');
-  const [duration, setDuration] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-
-  useEffect(() => {
-    const saved = getModuleData('Gym');
-    if (saved) {
-      setSelectedSchedule(saved.selectedSchedule || '');
-      setDuration(saved.duration || '');
-      setDate(saved.date || new Date().toISOString().split('T')[0]);
-    }
-  }, []);
+  const savedGym = getModuleData('Gym') || {};
+  const [selectedSchedule, setSelectedSchedule] = useState(savedGym.selectedSchedule || '');
+  const [duration, setDuration] = useState(savedGym.duration || '');
+  const [date, setDate] = useState(savedGym.date || new Date().toISOString().split('T')[0]);
 
   const workoutSchedules = {
     'Day 1: Chest & Triceps': {
@@ -365,18 +376,15 @@ export const GymForm = () => {
 
 export const YogaForm = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    duration: '',
-    asanasDone: '',
-    date: new Date().toISOString().split('T')[0]
-  });
-
-  useEffect(() => {
+  const [formData, setFormData] = useState(() => {
     const saved = getModuleData('Yoga');
-    if (saved) {
-      setFormData(saved);
-    }
-  }, []);
+    return saved || {
+      duration: '',
+      asanasDone: '',
+      intensity: 'Medium',
+      date: new Date().toISOString().split('T')[0]
+    };
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -394,11 +402,14 @@ export const YogaForm = () => {
       return;
     }
 
+    const multiplier = formData.intensity === 'High' ? 6 : formData.intensity === 'Low' ? 3 : 4;
+    const caloriesBurned = parseInt(formData.duration) * multiplier;
+
     const dataToSave = {
       ...formData,
       duration: parseInt(formData.duration),
       asanasDone: parseInt(formData.asanasDone),
-      caloriesBurned: parseInt(formData.duration) * 4
+      caloriesBurned
     };
 
     saveModuleData('Yoga', dataToSave);
@@ -456,11 +467,30 @@ export const YogaForm = () => {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Intensity Level
+            </label>
+            <select
+              name="intensity"
+              value={formData.intensity}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+            >
+              <option value="Low">Low (Restorative / Stretching)</option>
+              <option value="Medium">Medium (Hatha / Vinyasa Base)</option>
+              <option value="High">High (Power / Ashtanga)</option>
+            </select>
+          </div>
+
           {formData.duration && (
-            <div className="bg-blue-50 p-4 rounded-md border border-blue-100 text-center">
+            <div className="bg-blue-50 p-4 rounded-md border border-blue-100 text-center flex flex-col gap-1">
               <p className="text-blue-900 font-medium">
-                Calories: <span className="text-xl font-bold">{parseInt(formData.duration) * 4}</span> cal
+                Calories Burned: <span className="text-xl font-bold">
+                  {parseInt(formData.duration) * (formData.intensity === 'High' ? 6 : formData.intensity === 'Low' ? 3 : 4)}
+                </span> cal
               </p>
+              <p className="text-sm text-blue-700">Based on {formData.intensity.toLowerCase()} intensity</p>
             </div>
           )}
 
@@ -487,18 +517,14 @@ export const YogaForm = () => {
 
 export const SleepForm = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    bedTime: '',
-    wakeTime: '',
-    date: new Date().toISOString().split('T')[0]
-  });
-
-  useEffect(() => {
+  const [formData, setFormData] = useState(() => {
     const saved = getModuleData('Sleep');
-    if (saved) {
-      setFormData(saved);
-    }
-  }, []);
+    return saved || {
+      bedTime: '',
+      wakeTime: '',
+      date: new Date().toISOString().split('T')[0]
+    };
+  });
 
   const calculateSleepHours = () => {
     if (!formData.bedTime || !formData.wakeTime) return 0;
