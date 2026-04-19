@@ -1,18 +1,46 @@
-# React + Vite
+# FitTrack: Health & Fitness Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A comprehensive, MERN stack web application (React, Node.js, Vite, TailwindCSS) designed for modern, interactive health and fitness tracking. FitTrack helps users log their physical activities (Gym, Jogging, Yoga, Sleep) and monitor their comprehensive nutritional intakes to drive healthier lifestyle choices.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Activity Tracking**: Dedicated, smart modules for Jogging, Gym, Yoga, and Sleep analysis.
+- **Smart Nutritional Logs**: Automatically computes caloric macros (protein, carbs, fat) and determines junk vs. healthy foods using intelligent name-parsing heuristics.
+- **Intelligent Dashboard**: Features real-time macro-nutrient visualizations, physical vs. mental health scoring, and an active recommendation engine to alert you if limits are exceeded.
+- **Modern Responsive UI**: Built precisely with Tailwind CSS to offer a professional black, white, and clean colored aesthetic that flows dynamically across screen sizes.
+- **Secure Architecture**: Decoupled frontend (React/Vite) and backend (Node.js/Express) structure.
 
-## React Compiler
+## 📁 Project Structure
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```
+FitTrack/
+├── frontend/             # Single Page React Application (Vite Base)
+│   ├── src/
+│   │   ├── components/   # Reusable UI Elements (Cards, Navbars)
+│   │   ├── hooks/        # Local state and score accumulation logic
+│   │   ├── pages/        # Dashboard, Forms, and Full-page views
+│   │   ├── utils/        # Local storage formatting constraints
+│   │   └── App.jsx       # Root router entry
+│   └── package.json      # Frontend dependencies
+├── Backend/              # Node.js + Express API Backend Server
+│   ├── routes/           # Network routing for DB manipulation
+│   ├── models/           # Data models/schemas
+│   └── server.js         # Dedicated server entry point
+├── requirements.txt      # Text list of core dependencies
+└── README.md             # Core application guide
+```
 
-Note: This will impact Vite dev & build performances.
+## 🛠 Tech Stack
+- Frontend: React 18, Vite, React Router, TailwindCSS, MDI Icons
+- Backend: Node.js, Express.js (Preparing for MongoDB architecture)
 
-## Expanding the ESLint configuration
+## 💻 Running the App Locally
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Install Frontend Dependencies:**
+   `cd frontend`
+   `npm install`
+2. **Boot the Frontend Client:**
+   `npm run dev`
+3. **Boot the Backend Server (Optional pending DB setup):**
+   `cd Backend`
+   `node server.js`
