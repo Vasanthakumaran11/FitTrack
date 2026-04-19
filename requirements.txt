@@ -1,15 +1,29 @@
-# Frontend Packages
-react @ ^18.2.0
-react-dom @ ^18.2.0
-react-router-dom @ ^6.22.3
-react-toastify @ ^10.0.5
+# Project Requirements & Tech Stack
 
-# Build & Tooling Setup
-vite @ ^5.2.0
-tailwindcss @ ^3.4.1
-postcss @ ^8.4.38
-autoprefixer @ ^10.4.19
-eslint @ ^8.57.0
+This document outlines the core technologies and dependencies required for the Health & Fitness Tracking application.
 
-# Backend Packages
-express @ ^4.18.2
+## 🟢 Core Tech Stack
+- **Frontend**: React 19 (Functional Components + Hooks)
+- **Build Tool**: Vite 8.x
+- **Backend**: Node.js + Express.js
+- **Database**: MongoDB (Mongoose ODM)
+- **Styling**: TailwindCSS 3.4+ (Custom "Clean UI" configuration)
+
+## 🔵 Major Frontend Dependencies
+- **react-router-dom**: Client-side routing for Dashboard and Forms.
+- **react-toastify**: Real-time status notifications (Success/Error handling).
+- **lucide-react**: Lightweight icon set for UI elements.
+- **axios / native fetch**: Backend API communication.
+- **context-api**: Centralized User Authentication & State persistence.
+
+## 🟠 Major Backend Dependencies
+- **express**: Core server framework.
+- **mongoose**: Schema-based data modeling for MongoDB.
+- **cors**: Cross-Origin Resource Sharing for Frontend-Backend communication.
+- **jsonwebtoken (JWT)**: Secure user session management (Planned).
+
+## 📊 Business Logic Modules
+- **useScore Engine**: 60/40 Physical-Mental health scoring logic.
+- **useCalories Engine**: Real-time metabolic and intake tracking.
+- **Gym Volume Engine**: Repetition/reps based strength analysis.
+- **Mental Wellness**: Integrated Yoga & Meditation tracking.

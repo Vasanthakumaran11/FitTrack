@@ -4,32 +4,68 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-
-
+// Register Route
 router.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
 
+  // Basic Validations
   if (!username || !email || !password) {
-    return res.json({ success: false, msg: "All fields required" });
+    return res.status(400).json({ success: false, msg: "All fields are required" });
   }
 
-  const user = new User({ username, email, password });
-  await user.save();
+  if (password.length < 6) {
+    return res.status(400).json({ success: false, msg: "Password must be at least 6 characters" });
+  }
 
-  res.json({ success: true, msg: "User registered" });
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, msg: "Email already exists" });
+    }
+
+    const user = new User({ username, email, password });
+    await user.save();
+
+    res.json({ 
+      success: true, 
+      msg: "User registered successfully", 
+      user: { id: user._id, username: user.username, email: user.email } 
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+    res.status(500).json({ success: false, msg: "Server error during registration" });
+  }
 });
 
-
+// Login Route
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email, password });
-
-  if (!user) {
-    return res.json({ success: false, msg: "Invalid credentials" });
+  if (!email || !password) {
+    return res.status(400).json({ success: false, msg: "Email and password are required" });
   }
 
-  res.json({ success: true, msg: "Login successful", user });
+  try {
+    // Simple plain-text check as requested
+    const user = await User.findOne({ email, password });
+
+    if (!user) {
+      return res.status(401).json({ success: false, msg: "Invalid email or password" });
+    }
+
+    res.json({ 
+      success: true, 
+      msg: "Login successful", 
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ success: false, msg: "Server error during login" });
+  }
 });
 
 module.exports = router;

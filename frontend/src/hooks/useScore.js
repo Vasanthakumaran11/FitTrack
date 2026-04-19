@@ -1,90 +1,116 @@
-/**
- * useScore Hook
- * Calculates overall health score based on:
- * - Calorie balance (30%)
- * - Sleep quality (30%)
- * - Yoga (20%)
- * - Stress level (20%)
- */
-
-import { useCalories } from './useCalories';
-import { useSleep } from './useSleep';
-import { useStress } from './useStress';
-
 export const useScore = (data) => {
-  const { calorieBalance } = useCalories(data);
-  const { sleepScore } = useSleep(data);
-  const { stressScore } = useStress(data);
-
-  const getYogaScore = () => {
-    const yogaMinutes = data?.yoga?.duration || 0;
-    const asanasDone = data?.yoga?.asanasDone || 0;
-
-    // Max 30 minutes and 5+ asanas for perfect score
-    const yogaDurationScore = Math.min((yogaMinutes / 30) * 100, 100);
-    const asanaScore = Math.min((asanasDone / 5) * 100, 100);
-
-    return (yogaDurationScore + asanaScore) / 2;
-  };
-
-  const getCalorieBalanceScore = () => {
-    // Ideal balance is around 0 (eat what you burn)
-    // Score decreases as imbalance increases
-    const deficit = Math.abs(calorieBalance);
-    
-    if (deficit === 0) return 100;
-    if (deficit <= 200) return 80;
-    if (deficit <= 500) return 60;
-    if (deficit <= 1000) return 40;
-    return 20;
-  };
-
-  const calculateOverallScore = () => {
-    const calorieScore = getCalorieBalanceScore();
-    const yogaScore = getYogaScore();
-
-    // Weighted calculation
-    const overallScore = 
-      (calorieScore * 0.3) +
-      (sleepScore * 0.3) +
-      (yogaScore * 0.2) +
-      (stressScore * 0.2);
-
-    return Math.round(overallScore);
-  };
-
-  const getHealthGrade = () => {
-    const score = calculateOverallScore();
-    if (score >= 90) return "A+";
-    if (score >= 80) return "A";
-    if (score >= 70) return "B";
-    if (score >= 60) return "C";
-    if (score >= 50) return "D";
-    return "F";
-  };
-
-  const getHealthMessage = () => {
-    const grade = getHealthGrade();
-    const messages = {
-      "A+": "Excellent! You're in great shape! 🎉",
-      "A": "Great job! Keep maintaining this routine! 👏",
-      "B": "Good effort! There's room for improvement. 💪",
-      "C": "You're doing okay, but try to improve. 📈",
-      "D": "You need to focus more on your health. ⚠️",
-      "F": "Your health needs serious attention. 🚨"
+  if (!data || data.totalDays === 0) {
+    return {
+      message: "No data available",
+      overallScore: null,
+      healthGrade: "N/A",
+      physicalScore: 0,
+      mentalScore: 0,
+      insights: ["Log your first activity to see results!"]
     };
-    return messages[grade];
+  }
+
+  const calculatePhysicalScore = () => {
+    let activityScore = 0;
+    const jogging = data.jogging?.duration || 0;
+    const gym = data.gym?.duration || 0;
+
+    // Activity (40)
+    if (jogging >= 30) activityScore += 20;
+    else if (jogging >= 15) activityScore += 10;
+
+    if (gym >= 30) activityScore += 20;
+    else if (gym >= 15) activityScore += 10;
+
+    // Nutrition (40)
+    let nutritionScore = 0;
+    const totals = {
+      cal: 0, protein: 0
+    };
+    
+    // Average food data
+    if (data.food) {
+      Object.values(data.food).forEach(meal => {
+        if (meal.totals) {
+          totals.cal += meal.totals.calories || 0;
+          totals.protein += meal.totals.protein || 0;
+        }
+      });
+    }
+
+    if (totals.cal >= 1800 && totals.cal <= 2500) nutritionScore += 15;
+    else if (totals.cal >= 1500) nutritionScore += 10;
+
+    if (totals.protein >= 60) nutritionScore += 15;
+    else if (totals.protein >= 40) nutritionScore += 10;
+
+    const junkCount = data.junkItems?.length || 0;
+    if (junkCount === 0) nutritionScore += 10;
+    else if (junkCount <= 2) nutritionScore += 5;
+
+    // Consistency (20)
+    const consistencyScore = Math.min((data.totalDays || 0) * 2, 20);
+
+    return Math.min(100, activityScore + nutritionScore + consistencyScore);
+  };
+
+  // --- MENTAL HEALTH (100) ---
+  const calculateMentalScore = () => {
+    let sleepScore = 0;
+    const sleepVal = data.sleep?.sleepHours;
+
+    // Sleep (50)
+    if (sleepVal >= 7 && sleepVal <= 8) sleepScore = 50;
+    else if (sleepVal >= 6) sleepScore = 35;
+    else if (sleepVal !== null && sleepVal !== undefined) sleepScore = 15;
+
+    // Mindfulness (50)
+    let mindfulnessScore = 0;
+    const mindfulness = data.yoga?.duration;
+    if (mindfulness >= 20) mindfulnessScore = 50;
+    else if (mindfulness >= 10) mindfulnessScore = 35;
+    else if (mindfulness !== null && mindfulness !== undefined) mindfulnessScore = 15;
+
+    return Math.min(100, sleepScore + mindfulnessScore);
+  };
+
+  const pScore = calculatePhysicalScore();
+  const mScore = calculateMentalScore();
+
+  const overallScore = Math.round((pScore * 0.6) + (mScore * 0.4));
+
+  const getHealthGrade = (score) => {
+    if (score >= 80) return "A";
+    if (score >= 65) return "B";
+    if (score >= 50) return "C";
+    return "D";
+  };
+
+  const generateInsights = () => {
+    const insights = [];
+    const sleep = data.sleep?.sleepHours;
+    const mindfulness = data.yoga?.duration || 0;
+    
+    let protein = 0;
+    if (data.food) {
+      Object.values(data.food).forEach(meal => {
+        if (meal.totals) protein += meal.totals.protein || 0;
+      });
+    }
+
+    if (sleep < 6 && mindfulness < 10) insights.push("High stress detected");
+    if (protein < 40) insights.push("Increase protein intake");
+    if ((data.jogging?.duration || 0) < 15) insights.push("Increase physical activity");
+
+    return insights;
   };
 
   return {
-    overallScore: calculateOverallScore(),
-    healthGrade: getHealthGrade(),
-    healthMessage: getHealthMessage(),
-    breakdownScores: {
-      calorieBalance: getCalorieBalanceScore(),
-      sleep: sleepScore,
-      yoga: getYogaScore(),
-      stress: stressScore
-    }
+    physicalScore: pScore,
+    mentalScore: mScore,
+    overallScore,
+    healthGrade: getHealthGrade(overallScore),
+    insights: generateInsights(),
+    healthMessage: `Overall physical and mental balance: ${getHealthGrade(overallScore)} Grade`
   };
 };

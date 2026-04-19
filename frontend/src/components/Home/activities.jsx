@@ -1,10 +1,7 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getModuleData } from '../../utils/storageUtils';
 
-function Activities({ work, desc, img }) {
+function Activities({ work, desc, img, isLogged }) {
     const navigate = useNavigate();
-    const [isDataStored] = useState(!!getModuleData(work));
 
     const handleAddData = () => {
         navigate('/' + work);
@@ -13,7 +10,7 @@ function Activities({ work, desc, img }) {
     return(
         <div 
             onClick={handleAddData}
-            className="group flex flex-col  bg-white border border-gray-200 rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 cursor-pointer"
+            className="group flex flex-col bg-white border border-gray-200 rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-gray-300 cursor-pointer"
         >
             <div className="relative overflow-hidden rounded-lg bg-gray-50 aspect-[4/3] mb-4">
                 <img
@@ -29,13 +26,9 @@ function Activities({ work, desc, img }) {
                 
                 <div className="mt-auto w-full">
                     <button
-                        className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                            isDataStored
-                            ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
+                        className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${isLogged ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                     >
-                        {isDataStored ? 'Update Data' : 'Add Data'}
+                        {isLogged ? 'Update ur data' : 'Log Activity'}
                     </button>
                 </div>
             </div>

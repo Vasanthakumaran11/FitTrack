@@ -1,13 +1,3 @@
-/**
- * useCalories Hook
- * Calculates calories burned and intake based on activities
- * 
- * Calorie burn rates:
- * - Jogging: 8 cal/min
- * - Gym: 10 cal/min
- * - Yoga: 4 cal/min
- */
-
 export const useCalories = (data) => {
   const calculateBurned = () => {
     if (!data) return 0;

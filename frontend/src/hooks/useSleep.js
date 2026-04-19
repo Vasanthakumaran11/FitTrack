@@ -11,6 +11,11 @@
 export const useSleep = (data) => {
   const calculateSleepHours = () => {
     if (!data || !data.sleep) return 0;
+    
+    // If we're using aggregated historical data, just return the average
+    if (data.sleep.sleepHours !== undefined) return data.sleep.sleepHours;
+
+    if (!data.sleep.bedTime || !data.sleep.wakeTime) return 0;
 
     const bedTime = new Date(`2000-01-01 ${data.sleep.bedTime}`);
     const wakeTime = new Date(`2000-01-01 ${data.sleep.wakeTime}`);
