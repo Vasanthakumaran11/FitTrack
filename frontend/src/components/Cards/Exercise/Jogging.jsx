@@ -1,9 +1,8 @@
-function Excersise(){
-    return(
+function Jogging(){
+    return( 
         <div>
-            <h1>Jogging
-        </h1>
+            <h1>Jogging</h1>
         </div>
     )
 }
-export default Excersise;
+export default Jogging;

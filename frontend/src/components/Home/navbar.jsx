@@ -3,46 +3,36 @@ import { useContext } from "react";
 import { UserContext } from "../login.jsx";
 
 function Navbar() {
-  const Data = useContext(UserContext);
-  const firstLetter = Data ? Data.charAt(0).toUpperCase() : "";
+  const data = useContext(UserContext);
+  const firstLetter = data ? data.charAt(0).toUpperCase() : "";
 
   return (
-    <nav className="bg-black/95 backdrop-blur-md text-white px-8 py-4 flex items-center justify-between sticky top-0 z-50 border-b border-white/10">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center rotate-3">
-          <span className="font-black text-xl -rotate-3">F</span>
-        </div>
-        <h1 className="font-bold text-2xl tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-          FitTrack
-        </h1>
-      </div>
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
+      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <span className="font-bold text-xl tracking-tight text-gray-900">FitTrack</span>
+        </Link>
 
-      <div className="flex items-center space-x-10">
-        <ul className="hidden md:flex space-x-8 text-sm font-medium text-gray-400">
-          <li className="hover:text-white transition-colors cursor-pointer">Home</li>
-          <li className="hover:text-white transition-colors cursor-pointer">About</li>
-          <li className="hover:text-white transition-colors cursor-pointer">Contact</li>
-        </ul>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+          <Link to="/" className="hover:text-black transition-colors">Dashboard</Link>
+          <Link to="/analysis" className="hover:text-black transition-colors">Analysis</Link>
+        </nav>
         
-
-        <div className="flex items-center gap-6">
-          {!Data && (
-            <Link 
-              to="/login"
-              className="text-sm font-semibold hover:text-blue-400 transition-colors"
-            >
-              Login
+        {/* User Avatar */}
+        <div className="flex items-center gap-4">
+          {data ? (
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white text-xs font-semibold cursor-pointer">
+              {firstLetter}
+            </div>
+          ) : (
+            <Link to="/login" className="text-sm font-medium text-gray-900 hover:underline">
+              Log in
             </Link>
           )}
-
-          {Data && (
-            <div className="relative group cursor-pointer">   
-             <h1 className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold ">{firstLetter}</h1>
-            </div>
-          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 }
 

@@ -7,17 +7,42 @@ function login (){
     return (
         <>
         <h1 className="text-3xl font-bold text-center mt-10">Login Page</h1>
-       
 
-        <Link to="/signup" className="text-blue-500 hover:underline block text-center mt-4">
-            Don't have an account? Sign Up
-        </Link>
+      <form
+        className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow flex flex-col"
+      >
        
-        <Link to="/Home" className="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600 block text-center">
-            Login
-        </Link>
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
         
-        </>
+          className="border border-gray-300 rounded px-4 py-2 mt-4"
+        />
+
+       
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          className="border border-gray-300 rounded px-4 py-2 mt-4"
+        />
+
+        <button
+          type="submit"
+          className="bg-blue-500 text-white rounded px-4 py-2 mt-6 hover:bg-blue-600"
+        >
+          Login
+        </button>
+        </form>
+
+      <Link
+        to="/signup"
+        className="text-blue-500 hover:underline block text-center mt-4"
+      >
+        Don't have an account? Sign Up
+      </Link>
+      </>
     )
 }
 export default login;

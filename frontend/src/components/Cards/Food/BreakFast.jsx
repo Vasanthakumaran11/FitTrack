@@ -1,8 +1,8 @@
-function Food(){
+function Breakfast(){
     return(
         <div>
-            <h1>Food</h1>  
+            <h1>Breakfast</h1>  
         </div>
     )
 }
-export default Food;
+export default Breakfast    ;
